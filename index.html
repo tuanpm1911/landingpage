@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Landing Page Generator</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; color: #222; }
+
+  .header { background: #1a1a2e; color: #fff; padding: 20px 0; text-align: center; }
+  .header h1 { font-size: 22px; font-weight: 600; }
+  .header p { font-size: 13px; color: #aaa; margin-top: 4px; }
+
+  .container { max-width: 720px; margin: 32px auto; padding: 0 16px 60px; }
+
+  .card { background: #fff; border-radius: 12px; padding: 28px; margin-bottom: 20px; border: 1px solid #e5e5e5; }
+  .card h2 { font-size: 15px; font-weight: 600; margin-bottom: 18px; color: #333; border-left: 3px solid #6c63ff; padding-left: 10px; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .form-row.full { grid-template-columns: 1fr; }
+
+  label { display: block; font-size: 12px; font-weight: 600; color: #555; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.4px; }
+  input, select, textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px;
+    font-size: 14px; color: #222; background: #fafafa; transition: border .2s;
+  }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: #6c63ff; background: #fff; }
+  textarea { resize: vertical; min-height: 80px; }
+
+  .color-row { display: flex; gap: 10px; align-items: center; }
+  .color-row input[type=color] { width: 44px; height: 40px; padding: 2px; cursor: pointer; border-radius: 8px; }
+  .color-row input[type=text] { flex: 1; }
+
+  .btn-generate {
+    width: 100%; padding: 14px; background: #6c63ff; color: #fff;
+    border: none; border-radius: 10px; font-size: 16px; font-weight: 600;
+    cursor: pointer; transition: background .2s;
+  }
+  .btn-generate:hover { background: #574fd6; }
+
+  .result-box { display: none; }
+  .result-box.show { display: block; }
+
+  .prompt-area {
+    background: #1a1a2e; color: #e0e0e0; border-radius: 10px;
+    padding: 20px; font-size: 13px; line-height: 1.7;
+    white-space: pre-wrap; max-height: 360px; overflow-y: auto;
+    border: 1px solid #333;
+  }
+
+  .btn-row { display: flex; gap: 10px; margin-top: 14px; }
+  .btn-copy {
+    flex: 1; padding: 12px; background: #22c55e; color: #fff;
+    border: none; border-radius: 8px; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: background .2s;
+  }
+  .btn-copy:hover { background: #16a34a; }
+  .btn-copy.copied { background: #15803d; }
+
+  .btn-claude {
+    flex: 1; padding: 12px; background: #f97316; color: #fff;
+    border: none; border-radius: 8px; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: background .2s; text-decoration: none;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .btn-claude:hover { background: #ea6700; }
+
+  .steps { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 10px; padding: 16px; margin-top: 16px; }
+  .steps p { font-size: 13px; color: #78350f; line-height: 1.9; }
+  .steps strong { color: #92400e; }
+
+  .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .tag {
+    padding: 5px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;
+    border: 1px solid #ddd; background: #f5f5f5; transition: all .15s;
+  }
+  .tag.active { background: #6c63ff; color: #fff; border-color: #6c63ff; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Landing Page Generator</h1>
+  <p>Điền thông tin bên dưới — tool sẽ tạo prompt cho Claude AI</p>
+</div>
+
+<div class="container">
+
+  <!-- THÔNG TIN CƠ BẢN -->
+  <div class="card">
+    <h2>Thông tin sản phẩm / dịch vụ</h2>
+    <div class="form-row full">
+      <label>Tên sản phẩm / dịch vụ *</label>
+      <input type="text" id="product" placeholder="VD: Khóa học Digital Marketing, Kem dưỡng da X...">
+    </div>
+    <div class="form-row">
+      <div>
+        <label>Ngành / lĩnh vực *</label>
+        <select id="industry">
+          <option value="">-- Chọn ngành --</option>
+          <option>Giáo dục / Khóa học</option>
+          <option>Thẩm mỹ / Làm đẹp</option>
+          <option>Bất động sản</option>
+          <option>Sức khỏe / Thực phẩm</option>
+          <option>Công nghệ / Phần mềm</option>
+          <option>Thời trang</option>
+          <option>Tài chính / Đầu tư</option>
+          <option>Nhà hàng / F&B</option>
+          <option>Dịch vụ B2B</option>
+          <option>Khác</option>
+        </select>
+      </div>
+      <div>
+        <label>Đối tượng khách hàng *</label>
+        <input type="text" id="audience" placeholder="VD: Phụ nữ 25-40 tuổi, dân văn phòng...">
+      </div>
+    </div>
+    <div class="form-row full">
+      <label>Điểm nổi bật / USP (tối đa 3 điểm)</label>
+      <textarea id="usp" placeholder="VD: Học online linh hoạt&#10;Có mentor 1-1&#10;Hoàn tiền nếu không hài lòng"></textarea>
+    </div>
+    <div class="form-row full">
+      <label>Nút kêu gọi hành động (CTA)</label>
+      <input type="text" id="cta" placeholder="VD: Đăng ký ngay, Nhận tư vấn miễn phí, Mua ngay...">
+    </div>
+  </div>
+
+  <!-- PHONG CÁCH THIẾT KẾ -->
+  <div class="card">
+    <h2>Phong cách thiết kế</h2>
+    <div class="form-row full">
+      <label>Phong cách</label>
+      <div class="tag-row" id="style-tags">
+        <span class="tag active" data-val="hiện đại, tối giản">Hiện đại / Minimal</span>
+        <span class="tag" data-val="bold, năng động, màu sắc nổi bật">Bold / Năng động</span>
+        <span class="tag" data-val="sang trọng, cao cấp, tông tối">Sang trọng / Luxury</span>
+        <span class="tag" data-val="thân thiện, ấm áp, gần gũi">Thân thiện / Warm</span>
+        <span class="tag" data-val="chuyên nghiệp, corporate, tin tưởng">Chuyên nghiệp / Corporate</span>
+      </div>
+    </div>
+    <div class="form-row" style="margin-top:16px">
+      <div>
+        <label>Màu chủ đạo</label>
+        <div class="color-row">
+          <input type="color" id="color-picker" value="#6c63ff" oninput="document.getElementById('color-hex').value=this.value">
+          <input type="text" id="color-hex" value="#6c63ff" placeholder="#6c63ff" oninput="document.getElementById('color-picker').value=this.value">
+        </div>
+      </div>
+      <div>
+        <label>Ngôn ngữ</label>
+        <select id="language">
+          <option value="Tiếng Việt">Tiếng Việt</option>
+          <option value="Tiếng Anh">Tiếng Anh</option>
+          <option value="Song ngữ Việt - Anh">Song ngữ Việt - Anh</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- NỘI DUNG BỔ SUNG -->
+  <div class="card">
+    <h2>Nội dung bổ sung (tuỳ chọn)</h2>
+    <div class="form-row full">
+      <label>Thông tin thêm về sản phẩm / chương trình khuyến mãi</label>
+      <textarea id="extra" placeholder="VD: Giá gốc 2.000.000đ, ưu đãi còn 990.000đ, chỉ trong tuần này..."></textarea>
+    </div>
+    <div class="form-row full">
+      <label>Sections muốn có trong landing page</label>
+      <div class="tag-row" id="section-tags">
+        <span class="tag active" data-val="Hero banner">Hero banner</span>
+        <span class="tag active" data-val="Tính năng / lợi ích">Tính năng</span>
+        <span class="tag active" data-val="Testimonial / đánh giá khách hàng">Testimonials</span>
+        <span class="tag active" data-val="FAQ">FAQ</span>
+        <span class="tag active" data-val="Form đăng ký / liên hệ">Form đăng ký</span>
+        <span class="tag" data-val="Bảng giá">Bảng giá</span>
+        <span class="tag" data-val="Đếm ngược khuyến mãi">Đếm ngược</span>
+        <span class="tag" data-val="Đội ngũ / về chúng tôi">Đội ngũ</span>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-generate" onclick="generate()">Tạo Prompt cho Claude AI</button>
+
+  <!-- KẾT QUẢ -->
+  <div class="result-box" id="result" style="margin-top:24px">
+    <div class="card">
+      <h2>Prompt đã được tạo — Copy và paste vào Claude.ai</h2>
+      <div class="prompt-area" id="prompt-output"></div>
+      <div class="btn-row">
+        <button class="btn-copy" id="btn-copy" onclick="copyPrompt()">Copy Prompt</button>
+        <a class="btn-claude" href="https://claude.ai" target="_blank">Mở Claude.ai</a>
+      </div>
+      <div class="steps">
+        <p>
+          <strong>Bước tiếp theo:</strong><br>
+          1. Nhấn <strong>Copy Prompt</strong> ở trên<br>
+          2. Nhấn <strong>Mở Claude.ai</strong> → tạo cuộc hội thoại mới<br>
+          3. Paste prompt vào → nhấn gửi<br>
+          4. Claude sẽ trả về code HTML hoàn chỉnh<br>
+          5. Copy toàn bộ HTML đó → vào <strong>LadiPage → Import HTML</strong><br>
+          6. Kéo thả chỉnh sửa theo ý muốn
+        </p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Tag toggle
+  document.querySelectorAll('.tag-row').forEach(row => {
+    row.querySelectorAll('.tag').forEach(tag => {
+      tag.addEventListener('click', () => tag.classList.toggle('active'));
+    });
+  });
+
+  function getActiveTags(id) {
+    return [...document.querySelectorAll(`#${id} .tag.active`)].map(t => t.dataset.val);
+  }
+
+  function generate() {
+    const product  = document.getElementById('product').value.trim();
+    const industry = document.getElementById('industry').value;
+    const audience = document.getElementById('audience').value.trim();
+    const usp      = document.getElementById('usp').value.trim();
+    const cta      = document.getElementById('cta').value.trim() || 'Đăng ký ngay';
+    const color    = document.getElementById('color-hex').value.trim() || '#6c63ff';
+    const language = document.getElementById('language').value;
+    const extra    = document.getElementById('extra').value.trim();
+    const style    = getActiveTags('style-tags').join(', ') || 'hiện đại, tối giản';
+    const sections = getActiveTags('section-tags').join(', ') || 'Hero banner, Tính năng, Form đăng ký';
+
+    if (!product) { alert('Vui lòng nhập tên sản phẩm / dịch vụ'); return; }
+    if (!industry) { alert('Vui lòng chọn ngành'); return; }
+    if (!audience) { alert('Vui lòng nhập đối tượng khách hàng'); return; }
+
+    const prompt = `Bạn là chuyên gia thiết kế landing page chuyển đổi cao. Hãy tạo một landing page HTML hoàn chỉnh với thông tin sau:
+
+== THÔNG TIN SẢN PHẨM ==
+- Tên sản phẩm/dịch vụ: ${product}
+- Ngành: ${industry}
+- Đối tượng khách hàng: ${audience}
+- Điểm nổi bật (USP): ${usp || 'Chất lượng cao, giá hợp lý, uy tín'}
+- CTA chính: ${cta}
+${extra ? `- Thông tin thêm: ${extra}` : ''}
+
+== YÊU CẦU THIẾT KẾ ==
+- Phong cách: ${style}
+- Màu chủ đạo: ${color}
+- Ngôn ngữ: ${language}
+- Sections cần có: ${sections}
+
+== YÊU CẦU KỸ THUẬT (QUAN TRỌNG) ==
+- Xuất ra MỘT file HTML duy nhất, đầy đủ từ <!DOCTYPE html> đến </html>
+- Tất cả CSS viết inline trong thẻ <style> trong <head>
+- Không dùng framework ngoài (Bootstrap, Tailwind...) — CSS thuần
+- Responsive mobile-first
+- Hình ảnh dùng placeholder từ https://placehold.co (VD: https://placehold.co/800x400)
+- Mỗi section có id rõ ràng (VD: id="hero", id="features", id="contact")
+- Không dùng JavaScript phức tạp — chỉ dùng JS cơ bản nếu cần
+- Code sạch, dễ chỉnh sửa, có comment phân chia section
+- Tối ưu conversion: headline hấp dẫn, copy thuyết phục, CTA nổi bật
+
+Hãy tạo landing page thực sự chuyên nghiệp, đủ nội dung để import vào LadiPage và chỉnh sửa.`;
+
+    document.getElementById('prompt-output').textContent = prompt;
+    document.getElementById('result').classList.add('show');
+    document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function copyPrompt() {
+    const text = document.getElementById('prompt-output').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('btn-copy');
+      btn.textContent = 'Đã copy!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy Prompt'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+</script>
+</body>
+</html>
