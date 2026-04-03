@@ -3,281 +3,933 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Landing Page Generator</title>
+<title>Landing Page Generator — AI Prompt Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; color: #222; }
+:root {
+  --bg: #F4F6FB;
+  --surface: #FFFFFF;
+  --card: #FFFFFF;
+  --card-hover: #F8F9FF;
+  --border: #E2E6F0;
+  --border-hover: #B8C2E0;
+  --accent: #FF5C35;
+  --accent2: #FF9A00;
+  --accent3: #00C48C;
+  --accent-blue: #4F6EF7;
+  --accent-light: #FFF0EC;
+  --text: #1A1D2E;
+  --muted: #7A82A0;
+  --selected-bg: #FFF0EC;
+  --selected-border: #FF5C35;
+  --output-bg: #1A1D2E;
+  --output-text: #E8ECFF;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Baloo 2', cursive, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 0 0 80px;
+}
 
-  .header { background: #1a1a2e; color: #fff; padding: 20px 0; text-align: center; }
-  .header h1 { font-size: 22px; font-weight: 600; }
-  .header p { font-size: 13px; color: #aaa; margin-top: 4px; }
+/* ── HEADER ── */
+.top-bar {
+  background: linear-gradient(135deg, #FF5C35 0%, #FF9A00 100%);
+  padding: 36px 20px 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.top-bar::before {
+  content: '';
+  position: absolute; top: -70px; right: -80px;
+  width: 280px; height: 280px;
+  background: rgba(255,255,255,0.08); border-radius: 50%;
+}
+.top-bar::after {
+  content: '';
+  position: absolute; bottom: -50px; left: -60px;
+  width: 220px; height: 220px;
+  background: rgba(255,255,255,0.06); border-radius: 50%;
+}
+.top-tag {
+  display: inline-block;
+  font-size: 11px; font-weight: 700; letter-spacing: 2px;
+  color: rgba(255,255,255,0.9); text-transform: uppercase;
+  background: rgba(255,255,255,0.18);
+  padding: 4px 16px; border-radius: 20px; margin-bottom: 12px;
+}
+.top-bar h1 {
+  font-size: clamp(26px, 5vw, 44px);
+  font-weight: 800; color: #fff; line-height: 1.1;
+  margin-bottom: 10px;
+}
+.top-bar h1 span { color: #FFF3CC; }
+.top-bar p {
+  color: rgba(255,255,255,0.82); font-size: 14px;
+  max-width: 480px; margin: 0 auto 18px; line-height: 1.6;
+}
+.steps-inline {
+  display: flex; justify-content: center; gap: 6px; flex-wrap: wrap;
+}
+.step-pill {
+  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+  color: #fff; font-size: 12px; font-weight: 600;
+  padding: 5px 14px; border-radius: 20px;
+}
+.step-pill .num { background: rgba(255,255,255,0.25); border-radius: 50%; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; margin-right: 5px; }
 
-  .container { max-width: 720px; margin: 32px auto; padding: 0 16px 60px; }
+/* ── PROGRESS ── */
+.progress-wrap {
+  max-width: 860px; margin: 0 auto; padding: 18px 20px 0;
+}
+.progress-steps { display: flex; gap: 6px; margin-bottom: 7px; }
+.step-dot { flex: 1; height: 4px; background: var(--border); border-radius: 2px; transition: background 0.3s; }
+.step-dot.active { background: var(--accent); }
+.step-dot.done { background: var(--accent3); }
+.progress-label { font-size: 12px; color: var(--muted); text-align: right; }
+.progress-label span { color: var(--accent); font-weight: 700; }
 
-  .card { background: #fff; border-radius: 12px; padding: 28px; margin-bottom: 20px; border: 1px solid #e5e5e5; }
-  .card h2 { font-size: 15px; font-weight: 600; margin-bottom: 18px; color: #333; border-left: 3px solid #6c63ff; padding-left: 10px; }
+/* ── SOURCE TABS ── */
+.source-tabs {
+  display: flex; gap: 10px; margin-bottom: 14px;
+}
+.source-tab {
+  flex: 1; padding: 14px 10px; background: var(--card);
+  border: 2px solid var(--border); border-radius: 12px;
+  cursor: pointer; text-align: center; transition: all 0.18s;
+}
+.source-tab:hover { border-color: var(--border-hover); transform: translateY(-1px); }
+.source-tab.selected { background: var(--selected-bg); border-color: var(--selected-border); }
+.source-tab .tab-icon { font-size: 22px; margin-bottom: 5px; }
+.source-tab .tab-name { font-size: 13px; font-weight: 700; }
+.source-tab .tab-desc { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
-  .form-row.full { grid-template-columns: 1fr; }
+/* ── MAIN ── */
+.main { max-width: 860px; margin: 0 auto; padding: 0 20px; }
+.section { margin-top: 30px; }
+.section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.step-num {
+  width: 28px; height: 28px; background: var(--accent);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.section-title { font-size: 17px; font-weight: 700; }
+.section-sub { font-size: 12px; color: var(--muted); margin-left: auto; }
 
-  label { display: block; font-size: 12px; font-weight: 600; color: #555; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.4px; }
-  input, select, textarea {
-    width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px;
-    font-size: 14px; color: #222; background: #fafafa; transition: border .2s;
-  }
-  input:focus, select:focus, textarea:focus { outline: none; border-color: #6c63ff; background: #fff; }
-  textarea { resize: vertical; min-height: 80px; }
+/* ── OPTION CARDS ── */
+.options-grid { display: grid; gap: 10px; }
+.cols-2 { grid-template-columns: 1fr 1fr; }
+.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.option-card {
+  background: var(--card); border: 2px solid var(--border);
+  border-radius: 12px; padding: 14px; cursor: pointer;
+  transition: all 0.18s; position: relative;
+}
+.option-card:hover {
+  border-color: var(--border-hover); background: var(--card-hover);
+  transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255,92,53,0.08);
+}
+.option-card.selected { background: var(--selected-bg); border-color: var(--selected-border); }
+.option-card.selected::after {
+  content: '✓'; position: absolute; top: 10px; right: 12px;
+  font-size: 12px; color: var(--accent); font-weight: 800;
+}
+.option-icon { font-size: 22px; margin-bottom: 6px; }
+.option-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+.option-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
+.option-tag {
+  display: inline-block; font-size: 9px; font-weight: 700;
+  letter-spacing: 0.5px; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 4px; margin-top: 7px;
+}
 
-  .color-row { display: flex; gap: 10px; align-items: center; }
-  .color-row input[type=color] { width: 44px; height: 40px; padding: 2px; cursor: pointer; border-radius: 8px; }
-  .color-row input[type=text] { flex: 1; }
+/* ── INPUT FIELDS ── */
+.field-wrap { margin-bottom: 14px; }
+.field-label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; display: block; }
+.field-input, .field-select, .field-textarea {
+  width: 100%; padding: 11px 14px;
+  border: 2px solid var(--border); border-radius: 10px;
+  font-family: 'Baloo 2', cursive, sans-serif;
+  font-size: 14px; color: var(--text); background: var(--card);
+  outline: none; transition: border-color 0.2s;
+}
+.field-input:focus, .field-select:focus, .field-textarea:focus { border-color: var(--accent); }
+.field-input::placeholder, .field-textarea::placeholder { color: var(--muted); }
+.field-textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
-  .btn-generate {
-    width: 100%; padding: 14px; background: #6c63ff; color: #fff;
-    border: none; border-radius: 10px; font-size: 16px; font-weight: 600;
-    cursor: pointer; transition: background .2s;
-  }
-  .btn-generate:hover { background: #574fd6; }
+/* ── COLOR GRID ── */
+.color-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.color-swatch {
+  border-radius: 10px; padding: 10px 6px; cursor: pointer;
+  border: 2px solid transparent; transition: all 0.18s; text-align: center;
+  background: var(--card); box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.color-swatch:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.color-swatch.selected { border-color: var(--accent); }
+.swatch-preview { width: 100%; height: 28px; border-radius: 6px; margin-bottom: 6px; }
+.swatch-name { font-size: 10px; font-weight: 700; color: var(--text); }
+.swatch-hex { font-size: 9px; color: var(--muted); font-family: monospace; }
 
-  .result-box { display: none; }
-  .result-box.show { display: block; }
+/* ── TOGGLE ── */
+.toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--card); border: 2px solid var(--border);
+  border-radius: 12px; padding: 12px 16px; margin-bottom: 8px;
+  cursor: pointer; transition: all 0.18s;
+}
+.toggle-row:hover { border-color: var(--border-hover); }
+.toggle-row.active { border-color: var(--accent); background: var(--selected-bg); }
+.toggle-left { display: flex; align-items: center; gap: 12px; }
+.toggle-icon { font-size: 18px; }
+.toggle-label { font-size: 14px; font-weight: 600; }
+.toggle-hint { font-size: 11px; color: var(--muted); }
+.toggle-switch {
+  width: 38px; height: 21px; background: var(--border);
+  border-radius: 11px; position: relative; transition: background 0.2s; flex-shrink: 0;
+}
+.toggle-switch::after {
+  content: ''; position: absolute;
+  width: 15px; height: 15px; background: white; border-radius: 50%;
+  top: 3px; left: 3px; transition: transform 0.2s;
+}
+.toggle-row.active .toggle-switch { background: var(--accent); }
+.toggle-row.active .toggle-switch::after { transform: translateX(17px); }
 
-  .prompt-area {
-    background: #1a1a2e; color: #e0e0e0; border-radius: 10px;
-    padding: 20px; font-size: 13px; line-height: 1.7;
-    white-space: pre-wrap; max-height: 360px; overflow-y: auto;
-    border: 1px solid #333;
-  }
+/* ── TAG PILLS ── */
+.tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.tag {
+  padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  cursor: pointer; border: 2px solid var(--border); background: var(--card);
+  transition: all 0.15s; color: var(--text);
+}
+.tag:hover { border-color: var(--accent); color: var(--accent); }
+.tag.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-  .btn-row { display: flex; gap: 10px; margin-top: 14px; }
-  .btn-copy {
-    flex: 1; padding: 12px; background: #22c55e; color: #fff;
-    border: none; border-radius: 8px; font-size: 14px; font-weight: 600;
-    cursor: pointer; transition: background .2s;
-  }
-  .btn-copy:hover { background: #16a34a; }
-  .btn-copy.copied { background: #15803d; }
+/* ── TIP BOX ── */
+.tip-box {
+  background: #FFF0EC; border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0; padding: 12px 14px; margin-top: 12px;
+  font-size: 12px; color: #7A3020; line-height: 1.6;
+}
+.tip-box strong { color: var(--accent); }
+.info-box {
+  background: #EEF1FF; border-left: 3px solid var(--accent-blue);
+  border-radius: 0 8px 8px 0; padding: 12px 14px; margin-top: 12px;
+  font-size: 12px; color: #3A4880; line-height: 1.6;
+}
+.info-box strong { color: var(--accent-blue); }
 
-  .btn-claude {
-    flex: 1; padding: 12px; background: #f97316; color: #fff;
-    border: none; border-radius: 8px; font-size: 14px; font-weight: 600;
-    cursor: pointer; transition: background .2s; text-decoration: none;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .btn-claude:hover { background: #ea6700; }
+/* ── PREVIEW CARD ── */
+.preview-card {
+  background: #1A1D2E; border-radius: 16px; overflow: hidden;
+  margin-top: 12px; border: 1px solid rgba(255,255,255,0.08);
+}
+.preview-header {
+  padding: 10px 16px; background: rgba(255,255,255,0.04);
+  display: flex; align-items: center; gap: 8px; font-size: 11px; color: rgba(255,255,255,0.35);
+  border-bottom: 1px solid rgba(255,255,255,0.06); font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+}
+.preview-dots { display: flex; gap: 5px; }
+.preview-dot { width: 9px; height: 9px; border-radius: 50%; }
 
-  .steps { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 10px; padding: 16px; margin-top: 16px; }
-  .steps p { font-size: 13px; color: #78350f; line-height: 1.9; }
-  .steps strong { color: #92400e; }
+/* ── OUTPUT BOX ── */
+.output-box {
+  background: var(--output-bg); border-radius: 16px; overflow: hidden;
+  box-shadow: 0 8px 32px rgba(26,29,46,0.14);
+}
+.output-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.04);
+}
+.output-title { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.45); letter-spacing: 1.5px; text-transform: uppercase; }
+.output-dots { display: flex; gap: 6px; }
+.output-dot { width: 10px; height: 10px; border-radius: 50%; }
+.copy-btn {
+  background: var(--accent); color: white; border: none;
+  padding: 8px 18px; border-radius: 8px;
+  font-family: 'Baloo 2', cursive, sans-serif;
+  font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.18s;
+}
+.copy-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.copy-btn.copied { background: var(--accent3); }
+.output-content {
+  padding: 22px; font-size: 13px; line-height: 1.85; color: var(--output-text);
+  white-space: pre-wrap; font-family: 'Baloo 2', cursive, sans-serif; min-height: 200px;
+}
+.output-empty { color: rgba(255,255,255,0.3); font-style: italic; }
 
-  .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
-  .tag {
-    padding: 5px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;
-    border: 1px solid #ddd; background: #f5f5f5; transition: all .15s;
-  }
-  .tag.active { background: #6c63ff; color: #fff; border-color: #6c63ff; }
+/* ── DIVIDER ── */
+.divider { border: none; border-top: 2px dashed var(--border); margin: 36px 0 28px; }
+.sub-label {
+  font-size: 12px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 1px;
+  margin: 16px 0 10px; display: flex; align-items: center; gap: 8px;
+}
+.sub-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── OPEN BUTTONS ── */
+.action-row { display: flex; gap: 10px; margin-top: 14px; }
+.btn-primary {
+  flex: 1; padding: 13px; background: var(--accent); color: #fff;
+  border: none; border-radius: 10px; font-family: 'Baloo 2', cursive, sans-serif;
+  font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.18s;
+  text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.btn-primary:hover { background: #e64820; transform: translateY(-1px); }
+.btn-secondary {
+  flex: 1; padding: 13px; background: var(--card); color: var(--text);
+  border: 2px solid var(--border); border-radius: 10px; font-family: 'Baloo 2', cursive, sans-serif;
+  font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.18s;
+  text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── STEPS GUIDE ── */
+.guide-steps {
+  background: #F0FBF6; border: 1.5px solid #B2EACC;
+  border-radius: 12px; padding: 16px 18px; margin-top: 14px;
+}
+.guide-step {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 7px 0; border-bottom: 1px solid rgba(0,196,140,0.12);
+}
+.guide-step:last-child { border-bottom: none; }
+.guide-num {
+  width: 22px; height: 22px; background: var(--accent3); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: white; flex-shrink: 0; margin-top: 1px;
+}
+.guide-text { font-size: 13px; line-height: 1.6; color: #1A4D33; }
+.guide-text strong { color: #00904A; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 640px) {
+  .cols-3, .cols-4 { grid-template-columns: 1fr 1fr; }
+  .cols-2 { grid-template-columns: 1fr; }
+  .field-row { grid-template-columns: 1fr; }
+  .color-grid { grid-template-columns: repeat(3, 1fr); }
+  .top-bar h1 { font-size: 24px; }
+  .action-row { flex-direction: column; }
+}
 </style>
 </head>
 <body>
 
-<div class="header">
-  <h1>Landing Page Generator</h1>
-  <p>Điền thông tin bên dưới — tool sẽ tạo prompt cho Claude AI</p>
+<!-- ═══ HEADER ═══ -->
+<div class="top-bar">
+  <div class="top-tag">✦ Công cụ miễn phí</div>
+  <h1>Landing Page <span>AI Generator</span></h1>
+  <p>Điền thông tin sản phẩm → nhận prompt chuẩn → dán vào Claude.ai → lấy HTML → import LadiPage</p>
+  <div class="steps-inline">
+    <div class="step-pill"><span class="num">1</span>Điền form</div>
+    <div class="step-pill"><span class="num">2</span>Copy prompt</div>
+    <div class="step-pill"><span class="num">3</span>Paste vào Claude.ai</div>
+    <div class="step-pill"><span class="num">4</span>Lấy HTML → LadiPage</div>
+  </div>
 </div>
 
-<div class="container">
-
-  <!-- THÔNG TIN CƠ BẢN -->
-  <div class="card">
-    <h2>Thông tin sản phẩm / dịch vụ</h2>
-    <div class="form-row full">
-      <label>Tên sản phẩm / dịch vụ *</label>
-      <input type="text" id="product" placeholder="VD: Khóa học Digital Marketing, Kem dưỡng da X...">
-    </div>
-    <div class="form-row">
-      <div>
-        <label>Ngành / lĩnh vực *</label>
-        <select id="industry">
-          <option value="">-- Chọn ngành --</option>
-          <option>Giáo dục / Khóa học</option>
-          <option>Thẩm mỹ / Làm đẹp</option>
-          <option>Bất động sản</option>
-          <option>Sức khỏe / Thực phẩm</option>
-          <option>Công nghệ / Phần mềm</option>
-          <option>Thời trang</option>
-          <option>Tài chính / Đầu tư</option>
-          <option>Nhà hàng / F&B</option>
-          <option>Dịch vụ B2B</option>
-          <option>Khác</option>
-        </select>
-      </div>
-      <div>
-        <label>Đối tượng khách hàng *</label>
-        <input type="text" id="audience" placeholder="VD: Phụ nữ 25-40 tuổi, dân văn phòng...">
-      </div>
-    </div>
-    <div class="form-row full">
-      <label>Điểm nổi bật / USP (tối đa 3 điểm)</label>
-      <textarea id="usp" placeholder="VD: Học online linh hoạt&#10;Có mentor 1-1&#10;Hoàn tiền nếu không hài lòng"></textarea>
-    </div>
-    <div class="form-row full">
-      <label>Nút kêu gọi hành động (CTA)</label>
-      <input type="text" id="cta" placeholder="VD: Đăng ký ngay, Nhận tư vấn miễn phí, Mua ngay...">
-    </div>
-  </div>
-
-  <!-- PHONG CÁCH THIẾT KẾ -->
-  <div class="card">
-    <h2>Phong cách thiết kế</h2>
-    <div class="form-row full">
-      <label>Phong cách</label>
-      <div class="tag-row" id="style-tags">
-        <span class="tag active" data-val="hiện đại, tối giản">Hiện đại / Minimal</span>
-        <span class="tag" data-val="bold, năng động, màu sắc nổi bật">Bold / Năng động</span>
-        <span class="tag" data-val="sang trọng, cao cấp, tông tối">Sang trọng / Luxury</span>
-        <span class="tag" data-val="thân thiện, ấm áp, gần gũi">Thân thiện / Warm</span>
-        <span class="tag" data-val="chuyên nghiệp, corporate, tin tưởng">Chuyên nghiệp / Corporate</span>
-      </div>
-    </div>
-    <div class="form-row" style="margin-top:16px">
-      <div>
-        <label>Màu chủ đạo</label>
-        <div class="color-row">
-          <input type="color" id="color-picker" value="#6c63ff" oninput="document.getElementById('color-hex').value=this.value">
-          <input type="text" id="color-hex" value="#6c63ff" placeholder="#6c63ff" oninput="document.getElementById('color-picker').value=this.value">
-        </div>
-      </div>
-      <div>
-        <label>Ngôn ngữ</label>
-        <select id="language">
-          <option value="Tiếng Việt">Tiếng Việt</option>
-          <option value="Tiếng Anh">Tiếng Anh</option>
-          <option value="Song ngữ Việt - Anh">Song ngữ Việt - Anh</option>
-        </select>
-      </div>
-    </div>
-  </div>
-
-  <!-- NỘI DUNG BỔ SUNG -->
-  <div class="card">
-    <h2>Nội dung bổ sung (tuỳ chọn)</h2>
-    <div class="form-row full">
-      <label>Thông tin thêm về sản phẩm / chương trình khuyến mãi</label>
-      <textarea id="extra" placeholder="VD: Giá gốc 2.000.000đ, ưu đãi còn 990.000đ, chỉ trong tuần này..."></textarea>
-    </div>
-    <div class="form-row full">
-      <label>Sections muốn có trong landing page</label>
-      <div class="tag-row" id="section-tags">
-        <span class="tag active" data-val="Hero banner">Hero banner</span>
-        <span class="tag active" data-val="Tính năng / lợi ích">Tính năng</span>
-        <span class="tag active" data-val="Testimonial / đánh giá khách hàng">Testimonials</span>
-        <span class="tag active" data-val="FAQ">FAQ</span>
-        <span class="tag active" data-val="Form đăng ký / liên hệ">Form đăng ký</span>
-        <span class="tag" data-val="Bảng giá">Bảng giá</span>
-        <span class="tag" data-val="Đếm ngược khuyến mãi">Đếm ngược</span>
-        <span class="tag" data-val="Đội ngũ / về chúng tôi">Đội ngũ</span>
-      </div>
-    </div>
-  </div>
-
-  <button class="btn-generate" onclick="generate()">Tạo Prompt cho Claude AI</button>
-
-  <!-- KẾT QUẢ -->
-  <div class="result-box" id="result" style="margin-top:24px">
-    <div class="card">
-      <h2>Prompt đã được tạo — Copy và paste vào Claude.ai</h2>
-      <div class="prompt-area" id="prompt-output"></div>
-      <div class="btn-row">
-        <button class="btn-copy" id="btn-copy" onclick="copyPrompt()">Copy Prompt</button>
-        <a class="btn-claude" href="https://claude.ai" target="_blank">Mở Claude.ai</a>
-      </div>
-      <div class="steps">
-        <p>
-          <strong>Bước tiếp theo:</strong><br>
-          1. Nhấn <strong>Copy Prompt</strong> ở trên<br>
-          2. Nhấn <strong>Mở Claude.ai</strong> → tạo cuộc hội thoại mới<br>
-          3. Paste prompt vào → nhấn gửi<br>
-          4. Claude sẽ trả về code HTML hoàn chỉnh<br>
-          5. Copy toàn bộ HTML đó → vào <strong>LadiPage → Import HTML</strong><br>
-          6. Kéo thả chỉnh sửa theo ý muốn
-        </p>
-      </div>
-    </div>
-  </div>
-
+<!-- ═══ PROGRESS ═══ -->
+<div class="progress-wrap">
+  <div class="progress-steps" id="progressSteps"></div>
+  <div class="progress-label">Đã hoàn thành <span id="doneCount">0</span> / <span id="totalSteps">8</span> bước</div>
 </div>
+
+<div class="main">
+
+<!-- ══════════════════════════════════════
+     STEP 1 — NGUỒN DỮ LIỆU ĐẦU VÀO
+══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="step-num">1</div>
+    <div class="section-title">Bạn có sẵn dữ liệu gì?</div>
+    <div class="section-sub">Chọn 1</div>
+  </div>
+  <div class="source-tabs" id="sourceTabs">
+    <div class="source-tab" data-key="source" data-val="tôi sẽ mô tả sản phẩm/dịch vụ trong phần nội dung bên dưới" onclick="selSource(this)">
+      <div class="tab-icon">✍️</div>
+      <div class="tab-name">Mô tả tay</div>
+      <div class="tab-desc">Tự nhập nội dung</div>
+    </div>
+    <div class="source-tab" data-key="source" data-val="tôi sẽ dán nội dung từ file Excel hoặc Google Sheet mô tả sản phẩm vào phần bên dưới — hãy đọc và tổ chức thành landing page" onclick="selSource(this)">
+      <div class="tab-icon">📊</div>
+      <div class="tab-name">File Excel / Sheet</div>
+      <div class="tab-desc">Dán dữ liệu từ bảng tính</div>
+    </div>
+    <div class="source-tab" data-key="source" data-val="tôi sẽ dán link URL landing page mẫu hoặc mô tả tham khảo bên dưới — hãy tạo landing page tương tự nhưng với nội dung của tôi" onclick="selSource(this)">
+      <div class="tab-icon">🔗</div>
+      <div class="tab-name">URL tham khảo</div>
+      <div class="tab-desc">Có link mẫu muốn làm theo</div>
+    </div>
+    <div class="source-tab" data-key="source" data-val="tôi sẽ mô tả ý tưởng thô về sản phẩm — hãy tự sáng tạo nội dung landing page hoàn chỉnh từ gợi ý của tôi" onclick="selSource(this)">
+      <div class="tab-icon">💡</div>
+      <div class="tab-name">Ý tưởng thô</div>
+      <div class="tab-desc">Chỉ có ý tưởng sơ bộ</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     STEP 2 — LOẠI SẢN PHẨM / NGÀNH
+══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="step-num">2</div>
+    <div class="section-title">Loại sản phẩm / Ngành</div>
+    <div class="section-sub">Chọn 1</div>
+  </div>
+  <div class="options-grid cols-3">
+    <div class="option-card" data-key="industry" data-val="khóa học online hoặc dịch vụ giáo dục — nhấn mạnh vào kết quả học viên đạt được, lộ trình học và giảng viên" onclick="sel(this)">
+      <div class="option-icon">🎓</div><div class="option-name">Khóa học / Giáo dục</div>
+      <div class="option-desc">Khóa online, coaching, training</div>
+      <div class="option-tag" style="background:#EEF1FF;color:#4F6EF7">Education</div>
+    </div>
+    <div class="option-card" data-key="industry" data-val="sản phẩm làm đẹp, mỹ phẩm hoặc chăm sóc sức khỏe — nhấn mạnh hiệu quả trước/sau và thành phần" onclick="sel(this)">
+      <div class="option-icon">💄</div><div class="option-name">Làm đẹp / Mỹ phẩm</div>
+      <div class="option-desc">Skincare, mỹ phẩm, spa, thẩm mỹ</div>
+      <div class="option-tag" style="background:#FDE8F8;color:#E040C8">Beauty</div>
+    </div>
+    <div class="option-card" data-key="industry" data-val="phần mềm SaaS hoặc ứng dụng công nghệ — nhấn mạnh tính năng, demo và lợi ích tiết kiệm thời gian" onclick="sel(this)">
+      <div class="option-icon">💻</div><div class="option-name">Phần mềm / SaaS</div>
+      <div class="option-desc">App, tool, platform, website</div>
+      <div class="option-tag" style="background:#EEF1FF;color:#4F6EF7">Tech</div>
+    </div>
+    <div class="option-card" data-key="industry" data-val="bất động sản hoặc dự án nhà ở — nhấn mạnh vị trí, tiện ích, pháp lý và chính sách thanh toán" onclick="sel(this)">
+      <div class="option-icon">🏠</div><div class="option-name">Bất động sản</div>
+      <div class="option-desc">Căn hộ, đất nền, dự án BĐS</div>
+      <div class="option-tag" style="background:#E6FBF4;color:#00C48C">Real Estate</div>
+    </div>
+    <div class="option-card" data-key="industry" data-val="sản phẩm thực phẩm chức năng hoặc sức khỏe — nhấn mạnh thành phần tự nhiên, chứng nhận và kết quả người dùng" onclick="sel(this)">
+      <div class="option-icon">🌿</div><div class="option-name">Sức khỏe / TPCN</div>
+      <div class="option-desc">Thực phẩm chức năng, wellness</div>
+      <div class="option-tag" style="background:#E6FBF4;color:#00C48C">Health</div>
+    </div>
+    <div class="option-card" data-key="industry" data-val="dịch vụ tư vấn hoặc B2B — nhấn mạnh uy tín, quy trình làm việc và kết quả khách hàng đạt được" onclick="sel(this)">
+      <div class="option-icon">🤝</div><div class="option-name">Dịch vụ / Tư vấn</div>
+      <div class="option-desc">Agency, consulting, freelance</div>
+      <div class="option-tag" style="background:#FFF8E6;color:#F5A623">B2B · Service</div>
+    </div>
+    <div class="option-card" data-key="industry" data-val="sự kiện hoặc workshop — nhấn mạnh lịch trình, diễn giả, địa điểm và đếm ngược thời gian" onclick="sel(this)">
+      <div class="option-icon">🎪</div><div class="option-name">Sự kiện / Workshop</div>
+      <div class="option-desc">Hội thảo, offline event, concert</div>
+      <div class="option-tag" style="background:#FDE8F8;color:#E040C8">Event</div>
+    </div>
+    <div class="option-card" data-key="industry" data-val="sản phẩm thương mại điện tử — nhấn mạnh hình ảnh sản phẩm, giá, ưu đãi và chính sách mua hàng" onclick="sel(this)">
+      <div class="option-icon">🛍️</div><div class="option-name">Thương mại điện tử</div>
+      <div class="option-desc">Sản phẩm vật lý, shop online</div>
+      <div class="option-tag" style="background:#FFF8E6;color:#F5A623">E-commerce</div>
+    </div>
+    <div class="option-card" data-key="industry" data-val="nhà hàng hoặc quán ăn — nhấn mạnh không gian, menu nổi bật và ưu đãi đặt bàn" onclick="sel(this)">
+      <div class="option-icon">🍜</div><div class="option-name">Nhà hàng / F&B</div>
+      <div class="option-desc">Quán ăn, café, food brand</div>
+      <div class="option-tag" style="background:#FFEEEE;color:#E63946">F&B</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     STEP 3 — MỤC TIÊU LANDING PAGE
+══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="step-num">3</div>
+    <div class="section-title">Mục tiêu chính của landing page</div>
+    <div class="section-sub">Chọn 1</div>
+  </div>
+  <div class="options-grid cols-3">
+    <div class="option-card" data-key="goal" data-val="thu thập lead — form đăng ký nổi bật, CTA 'Đăng ký nhận tư vấn miễn phí', hạn chế link thoát" onclick="sel(this)">
+      <div class="option-icon">📋</div><div class="option-name">Thu thập lead</div>
+      <div class="option-desc">Lấy tên, email, SĐT khách hàng tiềm năng</div>
+    </div>
+    <div class="option-card" data-key="goal" data-val="bán hàng trực tiếp — nút mua nổi bật, giá và ưu đãi rõ ràng, tạo urgency với đếm ngược hoặc số lượng giới hạn" onclick="sel(this)">
+      <div class="option-icon">💰</div><div class="option-name">Bán hàng trực tiếp</div>
+      <div class="option-desc">Chuyển đổi thành đơn hàng ngay</div>
+    </div>
+    <div class="option-card" data-key="goal" data-val="đăng ký tham gia sự kiện hoặc webinar — nhấn mạnh lịch, địa điểm, đếm ngược và lợi ích khi tham dự" onclick="sel(this)">
+      <div class="option-icon">🎟️</div><div class="option-name">Đăng ký sự kiện</div>
+      <div class="option-desc">Webinar, offline, hội thảo</div>
+    </div>
+    <div class="option-card" data-key="goal" data-val="tải app hoặc dùng thử miễn phí — nút download / free trial nổi bật, hiển thị rating và số lượng người dùng" onclick="sel(this)">
+      <div class="option-icon">📱</div><div class="option-name">Tải app / Dùng thử</div>
+      <div class="option-desc">Free trial, download, sign up</div>
+    </div>
+    <div class="option-card" data-key="goal" data-val="giới thiệu thương hiệu và tăng nhận diện — storytelling, giá trị cốt lõi, không cần CTA mạnh" onclick="sel(this)">
+      <div class="option-icon">✨</div><div class="option-name">Brand awareness</div>
+      <div class="option-desc">Giới thiệu thương hiệu, xây dựng uy tín</div>
+    </div>
+    <div class="option-card" data-key="goal" data-val="đặt lịch hẹn tư vấn — form đặt lịch hoặc link Calendly, nhấn mạnh quy trình tư vấn và kết quả kỳ vọng" onclick="sel(this)">
+      <div class="option-icon">📅</div><div class="option-name">Đặt lịch tư vấn</div>
+      <div class="option-desc">Book call, đặt hẹn, liên hệ</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     STEP 4 — THÔNG TIN SẢN PHẨM
+══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="step-num">4</div>
+    <div class="section-title">Thông tin cơ bản</div>
+  </div>
+  <div class="field-row">
+    <div class="field-wrap">
+      <label class="field-label">Tên sản phẩm / dịch vụ *</label>
+      <input class="field-input" id="productName" type="text" placeholder="VD: Khóa học Digital Marketing Pro..." oninput="buildPrompt()">
+    </div>
+    <div class="field-wrap">
+      <label class="field-label">Nút CTA chính *</label>
+      <input class="field-input" id="ctaText" type="text" placeholder="VD: Đăng ký ngay, Nhận tư vấn miễn phí..." oninput="buildPrompt()">
+    </div>
+  </div>
+  <div class="field-row">
+    <div class="field-wrap">
+      <label class="field-label">Đối tượng khách hàng *</label>
+      <input class="field-input" id="audience" type="text" placeholder="VD: Phụ nữ 25–40, dân văn phòng muốn tăng thu nhập..." oninput="buildPrompt()">
+    </div>
+    <div class="field-wrap">
+      <label class="field-label">Giá / Ưu đãi (nếu có)</label>
+      <input class="field-input" id="price" type="text" placeholder="VD: 990.000đ (gốc 2.000.000đ), miễn phí dùng thử..." oninput="buildPrompt()">
+    </div>
+  </div>
+  <div class="field-wrap">
+    <label class="field-label">Điểm nổi bật / USP (mỗi dòng 1 điểm)</label>
+    <textarea class="field-textarea" id="usp" rows="4" placeholder="VD:&#10;Học online linh hoạt 24/7&#10;Mentor 1-1 hỗ trợ tận tình&#10;Hoàn tiền 100% trong 7 ngày nếu không hài lòng&#10;Chứng chỉ được công nhận bởi 500+ doanh nghiệp" oninput="buildPrompt()"></textarea>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     STEP 5 — PHONG CÁCH & MÀU SẮC
+══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="step-num">5</div>
+    <div class="section-title">Phong cách thiết kế</div>
+    <div class="section-sub">Chọn 1</div>
+  </div>
+  <div class="options-grid cols-3">
+    <div class="option-card" data-key="style" data-val="hiện đại tối giản: nền trắng, nhiều khoảng trắng, typography sạch, ảnh lớn chất lượng cao" onclick="sel(this)">
+      <div class="option-icon">🤍</div><div class="option-name">Hiện đại / Minimal</div>
+      <div class="option-desc">Trắng, sạch, tối giản. Kiểu Apple, Notion</div>
+    </div>
+    <div class="option-card" data-key="style" data-val="bold năng động: màu sắc nổi bật, gradient, heading lớn, nhiều visual element, phong cách startup" onclick="sel(this)">
+      <div class="option-icon">⚡</div><div class="option-name">Bold / Năng động</div>
+      <div class="option-desc">Nổi bật, gradient mạnh. Kiểu startup tech</div>
+    </div>
+    <div class="option-card" data-key="style" data-val="sang trọng cao cấp: nền tối (#0D0D0D hoặc navy), chữ vàng hoặc trắng, hình ảnh mờ nghệ thuật" onclick="sel(this)">
+      <div class="option-icon">🖤</div><div class="option-name">Sang trọng / Luxury</div>
+      <div class="option-desc">Tông tối, cao cấp. Kiểu luxury brand</div>
+    </div>
+    <div class="option-card" data-key="style" data-val="thân thiện ấm áp: màu pastel, hình minh họa vui, tone gần gũi, phù hợp giáo dục và gia đình" onclick="sel(this)">
+      <div class="option-icon">🌸</div><div class="option-name">Thân thiện / Warm</div>
+      <div class="option-desc">Pastel, gần gũi. Phù hợp giáo dục</div>
+    </div>
+    <div class="option-card" data-key="style" data-val="chuyên nghiệp corporate: layout cân đối, màu xanh navy và trắng, uy tín, phù hợp B2B doanh nghiệp" onclick="sel(this)">
+      <div class="option-icon">🏢</div><div class="option-name">Chuyên nghiệp / Corporate</div>
+      <div class="option-desc">Navy, cân đối, tin cậy. Phù hợp B2B</div>
+    </div>
+    <div class="option-card" data-key="style" data-val="sáng tạo editorial: layout bất đối xứng, typography ấn tượng, hình ảnh nghệ thuật, như tạp chí" onclick="sel(this)">
+      <div class="option-icon">🎨</div><div class="option-name">Sáng tạo / Editorial</div>
+      <div class="option-desc">Bất đối xứng, ấn tượng. Kiểu tạp chí</div>
+    </div>
+  </div>
+
+  <div class="sub-label" style="margin-top:20px">Màu chủ đạo</div>
+  <div class="color-grid">
+    <div class="color-swatch" data-key="color" data-val="#FF5C35 (cam đỏ năng động)" onclick="selColor(this)">
+      <div class="swatch-preview" style="background:#FF5C35"></div>
+      <div class="swatch-name">Vibrant Orange</div><div class="swatch-hex">#FF5C35</div>
+    </div>
+    <div class="color-swatch" data-key="color" data-val="#4F6EF7 (xanh electric)" onclick="selColor(this)">
+      <div class="swatch-preview" style="background:#4F6EF7"></div>
+      <div class="swatch-name">Electric Blue</div><div class="swatch-hex">#4F6EF7</div>
+    </div>
+    <div class="color-swatch" data-key="color" data-val="#00C48C (xanh lá tươi)" onclick="selColor(this)">
+      <div class="swatch-preview" style="background:#00C48C"></div>
+      <div class="swatch-name">Fresh Teal</div><div class="swatch-hex">#00C48C</div>
+    </div>
+    <div class="color-swatch" data-key="color" data-val="#E040C8 (hồng neon)" onclick="selColor(this)">
+      <div class="swatch-preview" style="background:#E040C8"></div>
+      <div class="swatch-name">Neon Pink</div><div class="swatch-hex">#E040C8</div>
+    </div>
+    <div class="color-swatch" data-key="color" data-val="#7C3AED (tím đậm)" onclick="selColor(this)">
+      <div class="swatch-preview" style="background:#7C3AED"></div>
+      <div class="swatch-name">Deep Purple</div><div class="swatch-hex">#7C3AED</div>
+    </div>
+    <div class="color-swatch" data-key="color" data-val="#1B4FD8 (navy blue)" onclick="selColor(this)">
+      <div class="swatch-preview" style="background:#1B4FD8"></div>
+      <div class="swatch-name">Navy Blue</div><div class="swatch-hex">#1B4FD8</div>
+    </div>
+    <div class="color-swatch" data-key="color" data-val="#E63946 (đỏ bold)" onclick="selColor(this)">
+      <div class="swatch-preview" style="background:#E63946"></div>
+      <div class="swatch-name">Bold Red</div><div class="swatch-hex">#E63946</div>
+    </div>
+    <div class="color-swatch" data-key="color" data-val="#F59E0B (vàng gold)" onclick="selColor(this)">
+      <div class="swatch-preview" style="background:#F59E0B"></div>
+      <div class="swatch-name">Gold</div><div class="swatch-hex">#F59E0B</div>
+    </div>
+    <div class="color-swatch" data-key="color" data-val="#374151 (anthracite xám tối)" onclick="selColor(this)">
+      <div class="swatch-preview" style="background:#374151"></div>
+      <div class="swatch-name">Anthracite</div><div class="swatch-hex">#374151</div>
+    </div>
+    <div class="color-swatch" data-key="color" data-val="gradient từ #FF5C35 sang #FF9A00" onclick="selColor(this)">
+      <div class="swatch-preview" style="background:linear-gradient(135deg,#FF5C35,#FF9A00)"></div>
+      <div class="swatch-name">Orange Gradient</div><div class="swatch-hex">Gradient</div>
+    </div>
+    <div class="color-swatch" data-key="color" data-val="gradient từ #4F6EF7 sang #E040C8" onclick="selColor(this)">
+      <div class="swatch-preview" style="background:linear-gradient(135deg,#4F6EF7,#E040C8)"></div>
+      <div class="swatch-name">Blue → Pink</div><div class="swatch-hex">Gradient</div>
+    </div>
+    <div class="color-swatch" data-key="color" data-val="gradient từ #7C3AED sang #4F6EF7" onclick="selColor(this)">
+      <div class="swatch-preview" style="background:linear-gradient(135deg,#7C3AED,#4F6EF7)"></div>
+      <div class="swatch-name">Purple → Blue</div><div class="swatch-hex">Gradient</div>
+    </div>
+    <div class="color-swatch" data-key="color" data-val="gradient từ #00C48C sang #4F6EF7" onclick="selColor(this)">
+      <div class="swatch-preview" style="background:linear-gradient(135deg,#00C48C,#4F6EF7)"></div>
+      <div class="swatch-name">Teal → Blue</div><div class="swatch-hex">Gradient</div>
+    </div>
+    <div class="color-swatch" data-key="color" data-val="màu brand riêng — tôi sẽ ghi mã hex trong phần nội dung bên dưới" onclick="selColor(this)">
+      <div class="swatch-preview" style="background:conic-gradient(red,yellow,lime,aqua,blue,magenta,red)"></div>
+      <div class="swatch-name">Màu Brand</div><div class="swatch-hex">Tự nhập</div>
+    </div>
+  </div>
+  <div class="tip-box">
+    <strong>💡 Có landing page mẫu muốn làm theo?</strong> Dán link vào phần nội dung bên dưới và thêm câu: <em>"Thiết kế tương tự website [link]"</em> — Claude sẽ phân tích và bắt chước phong cách.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     STEP 6 — SECTIONS CẦN CÓ
+══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="step-num">6</div>
+    <div class="section-title">Sections trong landing page</div>
+    <div class="section-sub">Chọn nhiều</div>
+  </div>
+  <div class="tag-row" id="sectionTags">
+    <span class="tag active" data-val="Hero banner với headline ấn tượng và CTA chính">Hero banner</span>
+    <span class="tag active" data-val="Tính năng / lợi ích nổi bật (3–6 items với icon)">Tính năng / Lợi ích</span>
+    <span class="tag active" data-val="Testimonials / đánh giá khách hàng thực tế (tối thiểu 3 reviews)">Testimonials</span>
+    <span class="tag active" data-val="FAQ — câu hỏi thường gặp (5–7 câu hỏi)">FAQ</span>
+    <span class="tag active" data-val="Form đăng ký / liên hệ với tên, SĐT, email">Form đăng ký</span>
+    <span class="tag" data-val="Bảng giá so sánh gói (2–3 gói)">Bảng giá</span>
+    <span class="tag" data-val="Đếm ngược khuyến mãi tạo urgency">Đếm ngược ưu đãi</span>
+    <span class="tag" data-val="Giới thiệu đội ngũ / chuyên gia">Đội ngũ</span>
+    <span class="tag" data-val="Quy trình làm việc / lộ trình (timeline 3–5 bước)">Quy trình / Timeline</span>
+    <span class="tag" data-val="Logo khách hàng đã tin dùng (social proof)">Logo khách hàng</span>
+    <span class="tag" data-val="Số liệu thống kê ấn tượng (3–4 con số lớn)">Số liệu ấn tượng</span>
+    <span class="tag" data-val="Video giới thiệu hoặc demo sản phẩm">Video demo</span>
+    <span class="tag" data-val="Chính sách bảo hành / cam kết / hoàn tiền">Cam kết / Bảo hành</span>
+    <span class="tag" data-val="So sánh trước / sau hoặc với đối thủ">So sánh / Trước-Sau</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     STEP 7 — YÊU CẦU ĐẶC BIỆT
+══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="step-num">7</div>
+    <div class="section-title">Tùy chọn nâng cao</div>
+    <div class="section-sub">Bật / tắt</div>
+  </div>
+
+  <div class="sub-label">Responsive & Hiệu ứng</div>
+  <div class="toggle-row" id="t_mobile" onclick="tog('t_mobile','opt_mobile','tối ưu mobile-first: font lớn hơn trên điện thoại, nút CTA sticky ở dưới màn hình mobile, stack layout thành 1 cột')">
+    <div class="toggle-left"><div class="toggle-icon">📱</div>
+      <div><div class="toggle-label">Tối ưu mobile trước</div><div class="toggle-hint">Sticky CTA, font lớn, layout 1 cột trên điện thoại</div></div>
+    </div><div class="toggle-switch"></div>
+  </div>
+  <div class="toggle-row" id="t_anim" onclick="tog('t_anim','opt_anim','thêm CSS animation nhẹ: fade-in khi scroll, hover effects trên cards và buttons — không dùng JS nặng')">
+    <div class="toggle-left"><div class="toggle-icon">✨</div>
+      <div><div class="toggle-label">Animation nhẹ khi scroll</div><div class="toggle-hint">Fade-in, hover effect — CSS thuần, không JS nặng</div></div>
+    </div><div class="toggle-switch"></div>
+  </div>
+
+  <div class="sub-label">Chuyển đổi (Conversion)</div>
+  <div class="toggle-row" id="t_urgency" onclick="tog('t_urgency','opt_urgency','tạo urgency: thêm dòng chữ số lượng giới hạn còn lại, thời gian ưu đãi sắp hết, hoặc đếm ngược JavaScript')">
+    <div class="toggle-left"><div class="toggle-icon">⏰</div>
+      <div><div class="toggle-label">Tạo urgency (FOMO)</div><div class="toggle-hint">Giới hạn số lượng, đếm ngược, ưu đãi sắp hết</div></div>
+    </div><div class="toggle-switch"></div>
+  </div>
+  <div class="toggle-row" id="t_sticky_cta" onclick="tog('t_sticky_cta','opt_sticky','thanh CTA sticky: nút đăng ký luôn hiển thị khi scroll xuống, không mất khỏi tầm nhìn')">
+    <div class="toggle-left"><div class="toggle-icon">📌</div>
+      <div><div class="toggle-label">Nút CTA luôn hiển thị (Sticky)</div><div class="toggle-hint">Nút đăng ký/mua theo khi scroll</div></div>
+    </div><div class="toggle-switch"></div>
+  </div>
+  <div class="toggle-row" id="t_popup" onclick="tog('t_popup','opt_popup','popup exit-intent: khi user định đóng tab hoặc rời trang, hiện popup ưu đãi đặc biệt cuối cùng')">
+    <div class="toggle-left"><div class="toggle-icon">🎯</div>
+      <div><div class="toggle-label">Popup khi sắp thoát trang</div><div class="toggle-hint">Exit-intent popup với ưu đãi đặc biệt</div></div>
+    </div><div class="toggle-switch"></div>
+  </div>
+
+  <div class="sub-label">Tích hợp</div>
+  <div class="toggle-row" id="t_zalo" onclick="tog('t_zalo','opt_zalo','thêm nút Zalo floating góc dưới phải để khách hàng nhắn tin trực tiếp')">
+    <div class="toggle-left"><div class="toggle-icon">💬</div>
+      <div><div class="toggle-label">Nút Zalo floating</div><div class="toggle-hint">Chat Zalo trực tiếp từ landing page</div></div>
+    </div><div class="toggle-switch"></div>
+  </div>
+  <div class="toggle-row" id="t_fb" onclick="tog('t_fb','opt_fb','thêm Facebook Messenger chat bubble để khách hàng nhắn tin qua Facebook')">
+    <div class="toggle-left"><div class="toggle-icon">📘</div>
+      <div><div class="toggle-label">Facebook Messenger bubble</div><div class="toggle-hint">Chat Facebook từ landing page</div></div>
+    </div><div class="toggle-switch"></div>
+  </div>
+  <div class="toggle-row" id="t_gtag" onclick="tog('t_gtag','opt_gtag','thêm placeholder Google Tag Manager và Facebook Pixel vào <head> để dễ cài tracking sau')">
+    <div class="toggle-left"><div class="toggle-icon">📊</div>
+      <div><div class="toggle-label">Placeholder tracking (GTM, Pixel)</div><div class="toggle-hint">Google Tag Manager + Facebook Pixel ready</div></div>
+    </div><div class="toggle-switch"></div>
+  </div>
+
+  <div class="sub-label">Kỹ thuật</div>
+  <div class="toggle-row" id="t_seo" onclick="tog('t_seo','opt_seo','tối ưu SEO cơ bản: thẻ title, meta description, Open Graph tags để share đẹp trên mạng xã hội')">
+    <div class="toggle-left"><div class="toggle-icon">🔍</div>
+      <div><div class="toggle-label">SEO cơ bản + Open Graph</div><div class="toggle-hint">Meta tags, OG tags để share đẹp trên MXH</div></div>
+    </div><div class="toggle-switch"></div>
+  </div>
+  <div class="toggle-row" id="t_ladipage" onclick="tog('t_ladipage','opt_ladipage','tối ưu HTML cho LadiPage import: CSS inline, section id rõ ràng, tránh JS phức tạp, dễ chỉnh sửa')">
+    <div class="toggle-left"><div class="toggle-icon">📥</div>
+      <div><div class="toggle-label">Tối ưu cho LadiPage import</div><div class="toggle-hint">CSS inline, section ID rõ, dễ kéo thả chỉnh sửa</div></div>
+    </div><div class="toggle-switch"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     STEP 8 — NỘI DUNG / DỮ LIỆU ĐẦU VÀO
+══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="step-num" style="background:var(--accent2)">8</div>
+    <div class="section-title">Dán nội dung / dữ liệu của bạn vào đây</div>
+    <div class="section-sub">Bắt buộc</div>
+  </div>
+  <textarea class="field-textarea" id="contentInput" rows="8" style="min-height:150px"
+    placeholder="Dán vào đây bất kỳ:&#10;• Mô tả sản phẩm / dịch vụ (ngắn hay dài đều được)&#10;• Dữ liệu từ file Excel (copy cả bảng vào đây)&#10;• Link landing page mẫu: https://www.mktteam.io.vn/runbiz&#10;• Màu brand hex: #FF5500, #333333&#10;• Testimonials thực tế từ khách hàng&#10;• Thông tin giá, chương trình ưu đãi&#10;• Bất kỳ nội dung thô nào — Claude tự tổ chức lại"
+    oninput="buildPrompt()"></textarea>
+  <div class="info-box">
+    <strong>📌 Mẹo dùng với URL tham khảo:</strong> Dán link <em>https://www.mktteam.io.vn/runbiz</em> vào đây → Claude sẽ phân tích cấu trúc và tạo landing page tương tự với nội dung của bạn. Không cần dọn dẹp dữ liệu — dán thô cũng được.
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ══════════════════════════════════════
+     OUTPUT — PROMPT
+══════════════════════════════════════ -->
+<div class="section-header">
+  <div class="step-num" style="background:linear-gradient(135deg,#FF5C35,#FF9A00)">✦</div>
+  <div class="section-title">Prompt của bạn — sẵn sàng dán vào Claude.ai</div>
+</div>
+
+<div class="output-box">
+  <div class="output-header">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="output-dots">
+        <div class="output-dot" style="background:#FF5F57"></div>
+        <div class="output-dot" style="background:#FFBD2E"></div>
+        <div class="output-dot" style="background:#28C940"></div>
+      </div>
+      <div class="output-title">Prompt · Sẵn sàng copy</div>
+    </div>
+    <button class="copy-btn" onclick="copyPrompt()" id="copyBtn">📋 Sao chép prompt</button>
+  </div>
+  <div class="output-content" id="promptOutput">
+    <span class="output-empty">Điền thông tin ở trên — prompt sẽ tự động tạo ở đây...</span>
+  </div>
+</div>
+
+<div class="action-row" style="margin-top:14px">
+  <button class="btn-primary" onclick="copyPrompt()">📋 Copy Prompt</button>
+  <a class="btn-secondary" href="https://claude.ai" target="_blank">🤖 Mở Claude.ai</a>
+  <a class="btn-secondary" href="https://ladipage.vn" target="_blank">🚀 Mở LadiPage</a>
+</div>
+
+<div class="guide-steps" style="margin-top:16px">
+  <div class="guide-step">
+    <div class="guide-num">1</div>
+    <div class="guide-text">Nhấn <strong>Copy Prompt</strong> ở trên</div>
+  </div>
+  <div class="guide-step">
+    <div class="guide-num">2</div>
+    <div class="guide-text">Nhấn <strong>Mở Claude.ai</strong> → tạo cuộc trò chuyện mới → paste prompt vào → nhấn gửi</div>
+  </div>
+  <div class="guide-step">
+    <div class="guide-num">3</div>
+    <div class="guide-text">Claude trả về <strong>code HTML hoàn chỉnh</strong> — copy toàn bộ đoạn code đó</div>
+  </div>
+  <div class="guide-step">
+    <div class="guide-num">4</div>
+    <div class="guide-text">Vào <strong>LadiPage → Tạo trang mới → Import HTML</strong> → paste code vào → kéo thả chỉnh sửa</div>
+  </div>
+  <div class="guide-step">
+    <div class="guide-num">5</div>
+    <div class="guide-text">Thay ảnh placeholder bằng ảnh thực, chỉnh màu sắc, font chữ → <strong>Publish</strong> là xong 🎉</div>
+  </div>
+</div>
+
+</div><!-- .main -->
 
 <script>
-  // Tag toggle
-  document.querySelectorAll('.tag-row').forEach(row => {
-    row.querySelectorAll('.tag').forEach(tag => {
-      tag.addEventListener('click', () => tag.classList.toggle('active'));
+const state = {
+  source:'', industry:'', goal:'', style:'', color:'',
+  sections:[], extras:{},
+  productName:'', cta:'', audience:'', price:'', usp:'', content:''
+};
+const TOTAL = 8;
+
+function initProgress() {
+  const w = document.getElementById('progressSteps');
+  document.getElementById('totalSteps').textContent = TOTAL;
+  for(let i=0;i<TOTAL;i++){
+    const d=document.createElement('div');
+    d.className='step-dot'; d.id='dot'+i; w.appendChild(d);
+  }
+  // init active section tags
+  document.querySelectorAll('#sectionTags .tag.active').forEach(t=>{
+    if(!state.sections.includes(t.dataset.val)) state.sections.push(t.dataset.val);
+  });
+  document.querySelectorAll('#sectionTags .tag').forEach(t=>{
+    t.addEventListener('click',()=>{
+      t.classList.toggle('active');
+      const v=t.dataset.val;
+      if(t.classList.contains('active')){ if(!state.sections.includes(v)) state.sections.push(v); }
+      else { state.sections=state.sections.filter(s=>s!==v); }
+      refreshProgress(); buildPrompt();
     });
   });
+  refreshProgress();
+}
 
-  function getActiveTags(id) {
-    return [...document.querySelectorAll(`#${id} .tag.active`)].map(t => t.dataset.val);
+function refreshProgress(){
+  state.productName = document.getElementById('productName').value.trim();
+  state.cta = document.getElementById('ctaText').value.trim();
+  state.audience = document.getElementById('audience').value.trim();
+  state.price = document.getElementById('price').value.trim();
+  state.usp = document.getElementById('usp').value.trim();
+  state.content = document.getElementById('contentInput').value.trim();
+  let done=0;
+  if(state.source) done++;
+  if(state.industry) done++;
+  if(state.goal) done++;
+  if(state.productName && state.cta && state.audience) done++;
+  if(state.style) done++;
+  if(state.color) done++;
+  if(state.sections.length>0) done++;
+  if(state.content) done++;
+  document.getElementById('doneCount').textContent=done;
+  for(let i=0;i<TOTAL;i++){
+    const d=document.getElementById('dot'+i);
+    d.className='step-dot'+(i<done?' done':i===done?' active':'');
+  }
+}
+
+function selSource(el){
+  document.querySelectorAll('.source-tab').forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected');
+  state.source=el.dataset.val;
+  refreshProgress(); buildPrompt();
+}
+
+function sel(el){
+  const key=el.dataset.key;
+  document.querySelectorAll('[data-key="'+key+'"]').forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected');
+  state[key]=el.dataset.val;
+  refreshProgress(); buildPrompt();
+}
+
+function selColor(el){
+  document.querySelectorAll('.color-swatch').forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected');
+  state.color=el.dataset.val;
+  refreshProgress(); buildPrompt();
+}
+
+function tog(id,key,val){
+  const row=document.getElementById(id);
+  const on=row.classList.toggle('active');
+  if(on) state.extras[key]=val;
+  else delete state.extras[key];
+  buildPrompt();
+}
+
+function buildPrompt(){
+  refreshProgress();
+  const lines=[];
+  lines.push('Bạn là chuyên gia thiết kế landing page chuyển đổi cao. Hãy tạo MỘT file HTML hoàn chỉnh cho landing page theo yêu cầu sau:\n');
+  lines.push('══════════════════════════════════════');
+  lines.push('THÔNG TIN SẢN PHẨM');
+  lines.push('══════════════════════════════════════');
+  if(state.productName) lines.push('Tên            : '+state.productName);
+  if(state.industry)    lines.push('Ngành          : '+state.industry);
+  if(state.goal)        lines.push('Mục tiêu       : '+state.goal);
+  if(state.audience)    lines.push('Khách hàng     : '+state.audience);
+  if(state.cta)         lines.push('CTA chính      : '+state.cta);
+  if(state.price)       lines.push('Giá / Ưu đãi  : '+state.price);
+  if(state.usp)         lines.push('Điểm nổi bật   :\n'+state.usp.split('\n').map(l=>'  • '+l).join('\n'));
+  if(state.source)      lines.push('\nNguồn dữ liệu  : '+state.source);
+
+  lines.push('\n══════════════════════════════════════');
+  lines.push('YÊU CẦU THIẾT KẾ');
+  lines.push('══════════════════════════════════════');
+  if(state.style)  lines.push('Phong cách     : '+state.style);
+  if(state.color)  lines.push('Màu chủ đạo   : '+state.color);
+  if(state.sections.length>0){
+    lines.push('Sections cần có:');
+    state.sections.forEach(s=>lines.push('  • '+s));
   }
 
-  function generate() {
-    const product  = document.getElementById('product').value.trim();
-    const industry = document.getElementById('industry').value;
-    const audience = document.getElementById('audience').value.trim();
-    const usp      = document.getElementById('usp').value.trim();
-    const cta      = document.getElementById('cta').value.trim() || 'Đăng ký ngay';
-    const color    = document.getElementById('color-hex').value.trim() || '#6c63ff';
-    const language = document.getElementById('language').value;
-    const extra    = document.getElementById('extra').value.trim();
-    const style    = getActiveTags('style-tags').join(', ') || 'hiện đại, tối giản';
-    const sections = getActiveTags('section-tags').join(', ') || 'Hero banner, Tính năng, Form đăng ký';
-
-    if (!product) { alert('Vui lòng nhập tên sản phẩm / dịch vụ'); return; }
-    if (!industry) { alert('Vui lòng chọn ngành'); return; }
-    if (!audience) { alert('Vui lòng nhập đối tượng khách hàng'); return; }
-
-    const prompt = `Bạn là chuyên gia thiết kế landing page chuyển đổi cao. Hãy tạo một landing page HTML hoàn chỉnh với thông tin sau:
-
-== THÔNG TIN SẢN PHẨM ==
-- Tên sản phẩm/dịch vụ: ${product}
-- Ngành: ${industry}
-- Đối tượng khách hàng: ${audience}
-- Điểm nổi bật (USP): ${usp || 'Chất lượng cao, giá hợp lý, uy tín'}
-- CTA chính: ${cta}
-${extra ? `- Thông tin thêm: ${extra}` : ''}
-
-== YÊU CẦU THIẾT KẾ ==
-- Phong cách: ${style}
-- Màu chủ đạo: ${color}
-- Ngôn ngữ: ${language}
-- Sections cần có: ${sections}
-
-== YÊU CẦU KỸ THUẬT (QUAN TRỌNG) ==
-- Xuất ra MỘT file HTML duy nhất, đầy đủ từ <!DOCTYPE html> đến </html>
-- Tất cả CSS viết inline trong thẻ <style> trong <head>
-- Không dùng framework ngoài (Bootstrap, Tailwind...) — CSS thuần
-- Responsive mobile-first
-- Hình ảnh dùng placeholder từ https://placehold.co (VD: https://placehold.co/800x400)
-- Mỗi section có id rõ ràng (VD: id="hero", id="features", id="contact")
-- Không dùng JavaScript phức tạp — chỉ dùng JS cơ bản nếu cần
-- Code sạch, dễ chỉnh sửa, có comment phân chia section
-- Tối ưu conversion: headline hấp dẫn, copy thuyết phục, CTA nổi bật
-
-Hãy tạo landing page thực sự chuyên nghiệp, đủ nội dung để import vào LadiPage và chỉnh sửa.`;
-
-    document.getElementById('prompt-output').textContent = prompt;
-    document.getElementById('result').classList.add('show');
-    document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const extras=Object.values(state.extras);
+  if(extras.length>0){
+    lines.push('\n── Tùy chọn nâng cao ──');
+    extras.forEach(v=>lines.push('  • '+v));
   }
 
-  function copyPrompt() {
-    const text = document.getElementById('prompt-output').textContent;
-    navigator.clipboard.writeText(text).then(() => {
-      const btn = document.getElementById('btn-copy');
-      btn.textContent = 'Đã copy!';
-      btn.classList.add('copied');
-      setTimeout(() => { btn.textContent = 'Copy Prompt'; btn.classList.remove('copied'); }, 2000);
-    });
+  lines.push('\n══════════════════════════════════════');
+  lines.push('YÊU CẦU KỸ THUẬT (QUAN TRỌNG)');
+  lines.push('══════════════════════════════════════');
+  lines.push('• Xuất ra 1 file HTML DUY NHẤT, đầy đủ từ <!DOCTYPE html> đến </html>');
+  lines.push('• Tất cả CSS viết trong thẻ <style> ở <head> — không dùng file CSS ngoài');
+  lines.push('• Không dùng CDN framework (Bootstrap, Tailwind) — CSS thuần hoàn toàn');
+  lines.push('• Responsive: hoạt động tốt trên mobile và desktop');
+  lines.push('• Hình ảnh: dùng https://placehold.co/WxH (VD: https://placehold.co/800x450)');
+  lines.push('• Mỗi section có id rõ ràng: id="hero", id="features", id="testimonials"...');
+  lines.push('• Copywriting hấp dẫn: headline mạnh, benefit-focused, CTA nổi bật');
+  lines.push('• Code sạch có comment /* ── SECTION NAME ── */ giữa các phần');
+  lines.push('• Tối ưu conversion: tạo trust, urgency, social proof đúng chỗ');
+
+  lines.push('\n══════════════════════════════════════');
+  lines.push('NỘI DUNG / DỮ LIỆU');
+  lines.push('══════════════════════════════════════');
+  lines.push(state.content || '[Chưa có nội dung — hãy dán tài liệu, mô tả sản phẩm vào đây trước khi copy prompt này]');
+
+  const out = document.getElementById('promptOutput');
+  if(!state.productName && !state.content && !state.industry){
+    out.innerHTML='<span class="output-empty">Điền thông tin ở trên — prompt sẽ tự động tạo ở đây...</span>';
+  } else {
+    out.textContent = lines.join('\n');
   }
+}
+
+function copyPrompt(){
+  const text = document.getElementById('promptOutput').textContent;
+  if(text.includes('Điền thông tin')) { alert('Vui lòng điền ít nhất tên sản phẩm và nội dung trước khi copy!'); return; }
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✓ Đã sao chép!';
+    btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent='📋 Sao chép prompt'; btn.classList.remove('copied'); }, 2400);
+  });
+}
+
+initProgress();
+buildPrompt();
 </script>
 </body>
 </html>
